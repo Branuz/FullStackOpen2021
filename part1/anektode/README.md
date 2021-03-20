@@ -1,1 +1,1 @@
-Exercises 1.6-1.11
+Exercises 1.12-1.14
