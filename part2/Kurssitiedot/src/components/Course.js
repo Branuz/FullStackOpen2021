@@ -21,14 +21,31 @@ const Header = (props) =>{
     )
   }
 
+  const Total = (props) =>{
+    
+    const total = props.course.reduce( (x, y) => {
+        return x + y.exercises
+      },0)
+
+    return (
+      <h3>Number of exercises {total}</h3>
+    )
+  }
+
 const Course = (props) =>{
     
-    return(
-        <>
-        <Header course={props.course.name}/>
-        <Content name={props.course.parts}/>
-        </>
-    )
+return(
+ props.course.map(x =>{
+
+      return(
+        <div key={x.id}>
+            <Header course={x.name}/>
+            <Content name={x.parts}/>
+            <Total course ={x.parts}/>
+        </div>
+        )
+    })
+)
 }
 
 export default Course
