@@ -1,5 +1,37 @@
 import React, { useState } from 'react'
 
+const FormSetup = (props) =>{
+  return(
+  <form id="myForm" onSubmit={props.addName}>
+  <div>name: <input onChange={(x) => props.setNewName(x.target.value) }/></div>
+  <div>phone: <input onChange={(x) =>props.setNewPhone(x.target.value) }/></div>
+  <div>
+    <button type="submit" onClick={()=>document.getElementById("myForm").reset()}>add</button>
+  </div>
+</form>
+  )
+}
+
+const Filter = (props) =>{
+  return(
+    <div>filter show with<input onChange={(x) =>{
+      props.setSearch(x.target.value)
+      props.setStatus(false>0)
+      }}/></div>
+  )
+}
+
+const Persons = (props) =>{
+  const notesToShow = props.searchStatus
+  ? props.persons
+  : props.persons.filter(x => x.name.includes(props.newSearch))
+
+  return(
+    notesToShow.map(x =><p key={x.name}> {x.name} {x.phone}</p>)
+  )
+
+}
+
 const App = () => {
   const [ persons, setPersons] = useState([
     { name: 'Arto Hellas', phone: '040-123456' },
@@ -19,7 +51,6 @@ const App = () => {
       phone: newPhone
     }
     const contains = persons.map(x => x.name===newName)
- 
     
     if(contains.includes(true)){
       alert(`${newName} is already added to phonebook`)
@@ -29,31 +60,16 @@ const App = () => {
     }
   }
 
-  const notesToShow = searchStatus
-  ? persons
-  : persons.filter(x => x.name.includes(newSearch))
-
-
   return (
     <div>
       <h2>Phonebook</h2>
-      <div>filter show with<input onChange={(x) =>{
-        setSearch(x.target.value)
-        setStatus(false>0)
-        }}/></div>
+        <Filter setSearch={setSearch} setStatus={setStatus}/>
       <h2>add a new</h2>
-      <form id="myForm" onSubmit={addName}>
-        <div>name: <input onChange={(x) => setNewName(x.target.value) }/></div>
-        <div>phone: <input onChange={(x) =>setNewPhone(x.target.value) }/></div>
-        <div>
-          <button type="submit" onClick={()=>document.getElementById("myForm").reset()}>add</button>
-        </div>
-      </form>
+        <FormSetup  setNewName={setNewName} setNewPhone={setNewPhone} addName={addName}  />
       <h2>Numbers</h2>
-      {notesToShow.map(x =><p key={x.name}> {x.name} {x.phone}</p>)}
+       <Persons searchStatus={searchStatus} persons={persons} newSearch={newSearch}/>
     </div>
   )
-
 }
 
 export default App
