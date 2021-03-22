@@ -1,8 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 
 const FormSetup = (props) =>{
   return(
-  <form id="myForm" onSubmit={props.addName}>
+  <form key={props.avain} id="myForm" onSubmit={props.addName}>
   <div>name: <input onChange={(x) => props.setNewName(x.target.value) }/></div>
   <div>phone: <input onChange={(x) =>props.setNewPhone(x.target.value) }/></div>
   <div>
@@ -27,28 +28,33 @@ const Persons = (props) =>{
   : props.persons.filter(x => x.name.includes(props.newSearch))
 
   return(
-    notesToShow.map(x =><p key={x.name}> {x.name} {x.phone}</p>)
+    notesToShow.map(x =><p key={x.id}> {x.name} {x.number}</p>)
   )
 
 }
 
 const App = () => {
-  const [ persons, setPersons] = useState([
-    { name: 'Arto Hellas', phone: '040-123456' },
-    { name: 'Ada Lovelace', phone: '39-44-5323523' },
-    { name: 'Dan Abramov', phone: '12-43-234345' },
-    { name: 'Mary Poppendieck', phone: '39-23-6423122' }
-  ]) 
+  const [persons, setPersons] = useState([])
+
   const [ newName, setNewName ] = useState('')
   const [ newPhone, setNewPhone ] = useState('')
   const [ newSearch, setSearch ] = useState('')
   const [ searchStatus, setStatus ] = useState(true)
 
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        setPersons(response.data)
+      })
+  }, [])
+
   const addName = (event) =>{
     event.preventDefault()
     const userObject = {
       name: newName,
-      phone: newPhone
+      number: newPhone,
+      id: persons.length+1
     }
     const contains = persons.map(x => x.name===newName)
     
@@ -65,7 +71,7 @@ const App = () => {
       <h2>Phonebook</h2>
         <Filter setSearch={setSearch} setStatus={setStatus}/>
       <h2>add a new</h2>
-        <FormSetup  setNewName={setNewName} setNewPhone={setNewPhone} addName={addName}  />
+        <FormSetup  setNewName={setNewName} setNewPhone={setNewPhone} addName={addName} avain={persons.length+1}  />
       <h2>Numbers</h2>
        <Persons searchStatus={searchStatus} persons={persons} newSearch={newSearch}/>
     </div>
