@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import serverConnector from "./components/serverConnector"
+import './index.css'
+
+
 
 const FormSetup = (props) =>{
   return(
@@ -37,8 +40,39 @@ const Persons = (props) =>{
         .then(returnedNote => {
           props.setPersons(props.persons.filter(n => n.id !== x.id))
          })
+
+         props.setSuccessMessage("Deleted " +x.name)
+         setTimeout(()=>{
+           props.setSuccessMessage(null)
+         },5000)
+         
       }
     }}>delete</button></p>)
+  )
+}
+
+const Notification = ({ message }) => {
+  
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="success">
+      {message}
+    </div>
+  )
+}
+const ErrorNotification = ({ message }) => {
+  
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="error">
+      {message}
+    </div>
   )
 }
 
@@ -49,6 +83,11 @@ const App = () => {
   const [ newPhone, setNewPhone ] = useState('')
   const [ newSearch, setSearch ] = useState('')
   const [ searchStatus, setStatus ] = useState(true)
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
+
+
+
 
   useEffect(() => {
     axios
@@ -72,30 +111,58 @@ const App = () => {
       const data = persons.find(n => n.id === user[0].id)
       const changedNote = { ...data, number: newPhone, }
       if(window.confirm(`${newName} is already added to phonebook, replace the old number with a new one?`)){
-        serverConnector
+      
+
+     const t= serverConnector
         .update(user[0].id, changedNote)
         .then(response => {
           setPersons(persons.map(note => (note.id !== user[0].id ? note : response)))
+        }).catch(error =>{
+          
+          setErrorMessage(user[0].name +" was already removed from server")
+          setTimeout(() => {
+            setErrorMessage(null)
+          }, 5000)
+          return error
         })
-      }
-    }else{
+        
+        const checkSuccess = () => {
+          t.then((a) => {
+            if([a][0]===undefined){
+              setSuccessMessage("Number changed for " +user[0].name)
+              setTimeout(()=>{
+                setSuccessMessage(null)
+              },5000)
+            }
+          })
+        }
+
+    checkSuccess()
+}
+    }
+    else{
     serverConnector.create(userObject)
     .then(returnedNote => {
       setPersons(persons.concat(returnedNote))
       setNewName("")
     })
-    console.log("Added successfully")
+    setSuccessMessage(<div>Added {userObject.name}</div>)
+    setTimeout(()=>{
+      setSuccessMessage(null)
+    },5000)
     }
   }
 
   return (
     <div>
       <h2>Phonebook</h2>
+        <Notification message={successMessage} />
+        <ErrorNotification message={errorMessage} />
         <Filter setSearch={setSearch} setStatus={setStatus}/>
       <h2>add a new</h2>
         <FormSetup  setNewName={setNewName} setNewPhone={setNewPhone} addName={addName} avain={persons.length+1}  />
       <h2>Numbers</h2>
-       <Persons searchStatus={searchStatus} persons={persons} newSearch={newSearch} setPersons={setPersons} setNewName={setNewName} />
+       <Persons searchStatus={searchStatus} persons={persons} newSearch={newSearch} setPersons={setPersons} setNewName={setNewName} setSuccessMessage={setSuccessMessage}/>
     </div>
   )
 }
